@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/go-compressions/brand/main/social/go-compressions-bzip2.png" alt="go-compressions/bzip2" width="720"></p>
+
 # bzip2
 
 The **encoder** Go's standard library does not have — pure Go, `CGO_ENABLED=0`,
