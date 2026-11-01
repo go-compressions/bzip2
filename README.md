@@ -20,6 +20,24 @@ There is **no decoder here on purpose**. The standard library's is correct,
 maintained and already everywhere; a second one would be a duplicate whose only
 distinction is being ours.
 
+## Untrusted input
+
+The encoder takes arbitrary bytes and has no decoder, so there is no size field
+to trust; the question is what the input can make it hold or spend.
+
+- **Memory is fixed by the level**, not by the input: one block buffer of
+  `level * 100 KiB`, allocated once and never grown (the run-length pass can turn
+  runs of four into five bytes, which is what the 19-byte slack is for; a test
+  asserts `cap` never moves, on random data, zeros, periods of 2 and 3, two equal
+  halves and runs of exactly four). The level is checked before it sizes anything.
+- **Time is O(n log n) per block** whatever the bytes: the prefix-doubling sort
+  stops at ⌈log₂ n⌉ rounds, or earlier when no class grew. Measured on a 900 KB
+  block: random 276 ms, period 2 276 ms, zeros 7 ms.
+- Each block allocates about 20 MB of sorter arrays (`TotalAlloc`, level 9),
+  garbage after the block; reusing them across blocks is an open optimisation.
+- `FuzzRoundTrip` (arbitrary bytes, split and level) is read back by the standard
+  library's decoder, which checks both checksums.
+
 ## Levels are a block size
 
 `NewWriterLevel(w, 1..9)` sets the block size, 100 KiB to 900 KiB — not an effort
